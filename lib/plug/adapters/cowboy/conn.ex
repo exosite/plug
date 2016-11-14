@@ -32,7 +32,7 @@ defmodule Plug.Adapters.Cowboy.Conn do
 
   def send_resp(req, status, headers, body) do
     headers = to_headers_map(headers)
-    :ok = :cowboy_req.reply(status, headers, body, req)
+    req = :cowboy_req.reply(status, headers, body, req)
     {:ok, nil, req}
   end
 
@@ -48,7 +48,7 @@ defmodule Plug.Adapters.Cowboy.Conn do
     body = {:sendfile, offset, length, path}
 
     headers = to_headers_map(headers)
-    :ok = :cowboy_req.reply(status, headers, body, req)
+    req = :cowboy_req.reply(status, headers, body, req)
     {:ok, nil, req}
   end
 
