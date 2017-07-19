@@ -25,7 +25,6 @@ defmodule Plug.Adapters.CowboyTest do
 
   test "builds args for cowboy dispatch" do
     assert [Plug.Adapters.CowboyTest.HTTP,
-            100,
             [port: 4000, max_connections: 16_384],
             %{env: %{dispatch: @dispatch}, onresponse: _}] =
            args(:http, __MODULE__, [], [])
@@ -33,51 +32,42 @@ defmodule Plug.Adapters.CowboyTest do
 
   test "builds args with custom options" do
     assert [Plug.Adapters.CowboyTest.HTTP,
-            25,
             [max_connections: 16_384, port: 3000, other: true],
-            [%{env: %{dispatch: @dispatch}, onresponse: _}] =
-           args(:http, __MODULE__, [], [port: 3000, acceptors: 25, other: true])
+            %{env: %{dispatch: @dispatch}, onresponse: _}] =
+           args(:http, __MODULE__, [], [port: 3000, other: true])
   end
 
   test "builds args with non 2-element tuple options" do
     assert [Plug.Adapters.CowboyTest.HTTP,
-            25,
             [:inet6, {:raw, 1, 2, 3}, max_connections: 16_384, port: 3000, other: true],
-            [env: [dispatch: @dispatch], onresponse: _]] =
-           args(:http, __MODULE__, [], [:inet6, {:raw, 1, 2, 3}, port: 3000, acceptors: 25, other: true])
+            %{env: %{dispatch: @dispatch}, onresponse: _}] =
+           args(:http, __MODULE__, [], [:inet6, {:raw, 1, 2, 3}, port: 3000, other: true])
   end
 
   test "builds args with protocol option" do
     assert [Plug.Adapters.CowboyTest.HTTP,
-            25,
             [max_connections: 16_384, port: 3000],
             %{env: %{dispatch: @dispatch}, onresponse: _, compress: true, timeout: 30_000}] =
-           args(:http, __MODULE__, [], [port: 3000, acceptors: 25, compress: true, timeout: 30_000])
+           args(:http, __MODULE__, [], [port: 3000, compress: true, timeout: 30_000])
 
     assert [Plug.Adapters.CowboyTest.HTTP,
-            25,
             [max_connections: 16_384, port: 3000],
             %{env: %{dispatch: @dispatch}, onresponse: _, timeout: 30_000}] =
-           args(:http, __MODULE__, [], [port: 3000, acceptors: 25, protocol_options: [timeout: 30_000]])
+           args(:http, __MODULE__, [], [port: 3000, protocol_options: [timeout: 30_000]])
   end
 
   test "builds args with single-atom protocol option" do
     assert [Plug.Adapters.CowboyTest.HTTP,
-            25,
-            [:inet6, max_connections: 16_384, port: 3000],
+            [:inet6, {:max_connections, 16_384}, {:port, 3000}],
             %{env: %{dispatch: @dispatch}, onresponse: _}] =
-           args(:http, __MODULE__, [], [:inet6, port: 3000, acceptors: 25])
+           args(:http, __MODULE__, [], [:inet6, port: 3000])
   end
 
   test "builds child specs" do
-    args = [Plug.Adapters.CowboyTest.HTTP,
-            100,
-            [port: 4000, max_connections: 16384],
-            %{env: %{dispatch: @dispatch}}]
-
-    assert child_spec(:http, __MODULE__, [], []) ==
-           {{:ranch_listener_sup, Plug.Adapters.CowboyTest.HTTP},
-            {:cowboy, :start_clear, args},
+    assert {{:ranch_listener_sup, Plug.Adapters.CowboyTest.HTTP},
+            {:cowboy, :start_clear, [Plug.Adapters.CowboyTest.HTTP,
+                    [port: 4000, max_connections: 16_384],
+                    %{env: %{dispatch: @dispatch}}]},
             :permanent,
             :infinity,
             :supervisor,

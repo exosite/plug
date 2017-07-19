@@ -11,9 +11,6 @@ defmodule Plug.Adapters.Cowboy do
     * `:port` - the port to run the server.
       Defaults to 4000 (http) and 4040 (https).
 
-    * `:acceptors` - the number of acceptors for the listener.
-      Defaults to 100.
-
     * `:max_connections` - max number of connections supported.
       Defaults to `16_384`.
 
@@ -141,7 +138,7 @@ defmodule Plug.Adapters.Cowboy do
       end
   """
   def child_spec(scheme, plug, opts, cowboy_options \\ []) do
-    [ref, nb_acceptors, trans_opts, proto_opts] = args(scheme, plug, opts, cowboy_options)
+    [ref, trans_opts, proto_opts] = args(scheme, plug, opts, cowboy_options)
     cowboy_function = case scheme do
       :http  -> :start_clear
       :https -> :start_tls
@@ -149,7 +146,7 @@ defmodule Plug.Adapters.Cowboy do
     {
       {:ranch_listener_sup, ref},
       {:cowboy, cowboy_function, [
-        ref, nb_acceptors, trans_opts, proto_opts
+        ref, trans_opts, proto_opts
       ]},
       :permanent, :infinity, :supervisor, [:ranch_listener_sup]
     }
@@ -225,7 +222,6 @@ defmodule Plug.Adapters.Cowboy do
     opts = Keyword.delete(opts, :otp_app)
     {ref, opts} = Keyword.pop(opts, :ref)
     {dispatch, opts} = Keyword.pop(opts, :dispatch)
-    {acceptors, opts} = Keyword.pop(opts, :acceptors, 100)
     {protocol_options, opts} = Keyword.pop(opts, :protocol_options, [])
 
     dispatch = :cowboy_router.compile(dispatch)
@@ -236,7 +232,7 @@ defmodule Plug.Adapters.Cowboy do
       }
     }
     |> Map.merge(:maps.from_list(add_on_response(protocol_options) ++ extra_options))
-    [ref, acceptors, non_keyword_opts ++ transport_options, protocol_options]
+    [ref, non_keyword_opts ++ transport_options, protocol_options]
   end
 
   defp add_on_response(protocol_options) do
