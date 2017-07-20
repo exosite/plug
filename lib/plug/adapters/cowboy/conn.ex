@@ -90,7 +90,15 @@ defmodule Plug.Adapters.Cowboy.Conn do
   end
 
   defp to_headers_map(headers) when is_list(headers) do
-    :maps.from_list(headers)
+    # Credits to https://github.com/VoiceLayer/plug_cowboy2/commit/efeb31fdca884c91c46e61e8dd1df279bda7df85
+    # Group set-cookie headers into a list for a single `set-cookie` key since cowboy 2 requires headers as a map.
+    Enum.reduce(headers, %{}, fn
+     ({key = "set-cookie", value}, acc) ->
+       set_cookies = Map.get(acc, key, [])
+       Map.put(acc, key, Enum.uniq([value | set_cookies]))
+     ({key, value}, acc) ->
+       Map.put(acc, key, value)
+   end)
   end
 
   defp to_headers_map(headers) when is_map(headers) do
