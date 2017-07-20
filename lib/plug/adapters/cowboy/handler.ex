@@ -7,14 +7,14 @@ defmodule Plug.Adapters.Cowboy.Handler do
     {__MODULE__, req, {plug, opts}}
   end
 
-  def upgrade(req, env, __MODULE__, {plug, opts}, _timeout, _hibernate) do
+  def upgrade(req, env, module, state, opts \\ nil)
+  def upgrade(req, env, __MODULE__, {plug, opts}, _opts) do
     conn = @connection.conn(req)
     try do
       %{adapter: {@connection, req}} =
         conn
         |> plug.call(opts)
         |> maybe_send(plug)
-
       {:ok, req, Map.put_new(env, :result, :ok)}
     catch
       :error, value ->

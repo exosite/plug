@@ -32,6 +32,7 @@ defmodule Plug.Adapters.Cowboy.Conn do
 
   def send_resp(req, status, headers, body) do
     headers = to_headers_map(headers)
+    status = Integer.to_string(status) <> " " <> Plug.Conn.Status.reason_phrase(status)
     req = :cowboy_req.reply(status, headers, body, req)
     {:ok, nil, req}
   end
@@ -54,12 +55,12 @@ defmodule Plug.Adapters.Cowboy.Conn do
 
   def send_chunked(req, status, headers) do
     headers = to_headers_map(headers)
-    req = :cowboy_req.chunked_reply(status, headers, req)
+    req = :cowboy_req.stream_reply(status, headers, req)
     {:ok, nil, req}
   end
 
   def chunk(req, body) do
-    :cowboy_req.chunk(body, req)
+    :cowboy_req.stream_body(body, :nofin, req)
   end
 
   def read_req_body(req, opts \\ %{})

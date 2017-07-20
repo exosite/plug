@@ -3,7 +3,6 @@ defmodule Plug.Adapters.Cowboy.ConnTest do
 
   alias Plug.Conn
   import Plug.Conn
-  import ExUnit.CaptureLog
 
   ## Cowboy setup for testing
   #
@@ -16,11 +15,9 @@ defmodule Plug.Adapters.Cowboy.ConnTest do
 
   setup_all do
     {:ok, _pid} = Plug.Adapters.Cowboy.http __MODULE__, [], port: 8001
-
     on_exit fn ->
       :ok = Plug.Adapters.Cowboy.shutdown(__MODULE__.HTTP)
     end
-
     :ok
   end
 
@@ -33,7 +30,6 @@ defmodule Plug.Adapters.Cowboy.ConnTest do
   def call(conn, []) do
     # Assert we never have a lingering @already_sent entry in the inbox
     refute_received @already_sent
-
     function = String.to_atom List.first(conn.path_info) || "root"
     apply __MODULE__, function, [conn]
   rescue
@@ -105,12 +101,10 @@ defmodule Plug.Adapters.Cowboy.ConnTest do
   end
 
   test "fails on large headers" do
-    assert capture_log(fn ->
-      cookie = "bar=" <> String.duplicate("a", 8_000_000)
-      response = request :get, "/headers", [{"cookie", cookie}]
-      assert match?({400, _, _}, response) or match?({:error, :closed}, response)
-      assert {200, _, _} = request :get, "/headers", [{"foo", "bar"}, {"baz", "bat"}]
-    end) =~ "Cowboy returned 400 and there are no headers in the connection"
+    cookie = "bar=" <> String.duplicate("a", 8_000_000)
+    response = request :get, "/headers", [{"cookie", cookie}]
+    assert {431, _, _} = response
+    assert {200, _, _} = request :get, "/headers", [{"foo", "bar"}, {"baz", "bat"}]
   end
 
   def send_200(conn) do
@@ -352,12 +346,24 @@ defmodule Plug.Adapters.Cowboy.ConnTest do
     assert body =~ "malformed request, a RuntimeError exception was raised with message \"invalid multipart"
   end
 
-  def https(conn) do
-    assert conn.scheme == :https
+  def http2(conn) do
     send_resp(conn, 200, "OK")
   end
 
-  def http2(conn) do
+  test "http2" do
+    assert {:ok, pid} = :gun.open('127.0.0.1', 8001, %{
+      protocols: [:http2],
+      transport_opts: []
+    })
+    assert {:ok, :http2} = :gun.await_up(pid)
+    ref = :gun.get(pid, "/http2", [])
+    assert {:response, :nofin, 200, _headers} = :gun.await(pid, ref)
+    assert {:ok, "OK"} = :gun.await_body(pid, ref)
+    :gun.close(pid)
+    :gun.flush(pid)
+  end
+
+  def https(conn) do
     assert conn.scheme == :https
     send_resp(conn, 200, "OK")
   end
@@ -368,23 +374,12 @@ defmodule Plug.Adapters.Cowboy.ConnTest do
     certfile: Path.expand("../../../fixtures/ssl/cert.pem", __DIR__)
   ]
 
-  test "https and http2" do
+  test "https" do
     {:ok, _pid} = Plug.Adapters.Cowboy.https __MODULE__, [], @https_options
     ssl_options = [ssl_options: [cacertfile: @https_options[:certfile], server_name_indication: 'localhost']]
     assert {:ok, 200, _headers, client} = :hackney.get("https://127.0.0.1:8002/https", [], "", ssl_options)
     assert {:ok, "OK"} = :hackney.body(client)
     :hackney.close(client)
-    assert {:ok, pid} = :gun.open('127.0.0.1', 8002, %{
-      protocols: [:http2],
-      transport: :ssl,
-      transport_opts: [cacertfile: @https_options[:certfile]]
-    })
-    assert {:ok, :http2} = :gun.await_up(pid)
-    ref = :gun.get(pid, "/http2", [])
-    assert {:response, :nofin, 200, _headers} = :gun.await(pid, ref)
-    assert {:ok, "OK"} = :gun.await_body(pid, ref)
-    :gun.close(pid)
-    :gun.flush(pid)
   after
     :ok = Plug.Adapters.Cowboy.shutdown __MODULE__.HTTPS
   end
