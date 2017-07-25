@@ -1,5 +1,5 @@
-%{"cowboy": {:git, "https://github.com/ninenines/cowboy.git", "804f16c356bc5528e89faf32d08b987a327ed7ba", [ref: "master"]},
-  "cowlib": {:git, "https://github.com/ninenines/cowlib.git", "11e07d3c2b164d06ad35188d83ad70e7501396db", [ref: "master"]},
+%{"cowboy": {:git, "https://github.com/ninenines/cowboy.git", "238ac3afc661046fb554a8bbb62d2b9912023247", [tag: "2.0.0-rc.1"]},
+  "cowlib": {:git, "https://github.com/ninenines/cowlib.git", "11e07d3c2b164d06ad35188d83ad70e7501396db", [tag: "2.0.0-rc.1"]},
   "earmark": {:hex, :earmark, "1.2.2", "f718159d6b65068e8daeef709ccddae5f7fdc770707d82e7d126f584cd925b74", [:mix], [], "hexpm"},
   "ex_doc": {:hex, :ex_doc, "0.16.2", "3b3e210ebcd85a7c76b4e73f85c5640c011d2a0b2f06dcdf5acdb2ae904e5084", [:mix], [{:earmark, "~> 1.1", [hex: :earmark, repo: "hexpm", optional: false]}], "hexpm"},
   "gun": {:git, "https://github.com/ninenines/gun.git", "02fa5f3606b5e18fb21fe48afcc73dad71b36ec9", [ref: "master"]},
@@ -9,5 +9,5 @@
   "json": {:hex, :json, "0.3.2", "e40a15993024a0cb4f5e22816d6be34002cc4463c61789ed35ec94c41911ebee", [:mix], []},
   "mime": {:hex, :mime, "1.1.0", "01c1d6f4083d8aa5c7b8c246ade95139620ef8effb009edde934e0ec3b28090a", [:mix], [], "hexpm"},
   "poison": {:hex, :poison, "3.1.0", "d9eb636610e096f86f25d9a46f35a9facac35609a7591b3be3326e99a0484665", [:mix], [], "hexpm"},
-  "ranch": {:git, "https://github.com/ninenines/ranch.git", "55c2a9d623454f372a15e99721a37093d8773b48", [ref: "master"]},
+  "ranch": {:hex, :ranch, "1.4.0", "10272f95da79340fa7e8774ba7930b901713d272905d0012b06ca6d994f8826b", [:rebar3], [], "hexpm"},
   "ssl_verify_hostname": {:hex, :ssl_verify_hostname, "1.0.5", "2e73e068cd6393526f9fa6d399353d7c9477d6886ba005f323b592d389fb47be", [:make], [], "hexpm"}}

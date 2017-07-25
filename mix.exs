@@ -1,7 +1,7 @@
 defmodule Plug.Mixfile do
   use Mix.Project
 
-  @version "1.4.0-rc.0"
+  @version "2.0.0-rc.0"
 
   def project do
     [app: :plug,
@@ -27,9 +27,9 @@ defmodule Plug.Mixfile do
 
   def deps do
     [{:mime, "~> 1.0"},
-     {:ranch, github: "ninenines/ranch", ref: "master", optional: true, override: true},
-     {:cowlib, github: "ninenines/cowlib", ref: "master", optional: true, override: true},
-     {:cowboy, github: "ninenines/cowboy", ref: "master", optional: true},
+     {:ranch, "~> 1.4", override: true},
+     {:cowlib, github: "ninenines/cowlib", tag: "2.0.0-rc.1", override: true},
+     {:cowboy, github: "ninenines/cowboy", tag: "2.0.0-rc.1"},
      {:ex_doc, "~> 0.15", only: :docs},
      {:inch_ex, ">= 0.0.0", only: :docs},
      {:gun, github: "ninenines/gun", ref: "master", only: :test},
